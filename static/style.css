@@ -1,0 +1,219 @@
+:root {
+    --primary-color: #4f46e5;
+    /* Blue from logo */
+    --accent-pink: #ec4899;
+    /* Pink from logo */
+    --accent-yellow: #eab308;
+    /* Yellow from logo */
+    --bg-color: #f8f8fc;
+    --card-bg: #ffffff;
+    --text-color: #1e293b;
+    --text-light: #64748b;
+    --border-color: #e2e8f0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    background-color: var(--card-bg);
+    padding: 0;
+    /* Remove padding from container to let header stretch */
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    overflow: hidden;
+    /* Ensure header radius matches container */
+}
+
+header {
+    background-color: var(--primary-color);
+    padding: 3rem 2rem;
+    color: white;
+}
+
+.logo {
+    width: 120px;
+    /* Increased size slightly */
+    margin-bottom: 1.5rem;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+header p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Add padding back to main content */
+main,
+.instructions {
+    padding: 2rem;
+    margin: 0;
+    /* Reset margins */
+}
+
+.instructions {
+    background-color: #f8fafc;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0;
+    /* Remove radius as it's inside container now */
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    text-align: left;
+    margin-bottom: 0;
+}
+
+.instructions h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.instructions ol,
+.instructions ul {
+    padding-left: 1.2rem;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.instructions li {
+    margin-bottom: 0.5rem;
+}
+
+.instructions strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.drop-zone {
+    width: 100%;
+    height: 180px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--text-light);
+    border: 2px dashed var(--border-color);
+    border-radius: 16px;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.drop-zone:hover,
+.drop-zone--over {
+    border-color: var(--primary-color);
+    background-color: #eef2ff;
+    color: var(--primary-color);
+}
+
+.drop-zone__input {
+    display: none;
+}
+
+.drop-zone__thumb {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f1f5f9;
+    background-size: cover;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.highlight {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-pink));
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    width: 100%;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    display: inline-block;
+    background-color: white;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #eef2ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1);
+}
+
+.alert {
+    padding: 12px;
+    background-color: #fef2f2;
+    color: #ef4444;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    border: 1px solid #fee2e2;
+}
