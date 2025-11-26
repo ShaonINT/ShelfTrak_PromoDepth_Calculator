@@ -1,11 +1,12 @@
 # ShelfTrak Promo Depth Calculator
 
-A web-based tool designed to automatically calculate promotion depths from "Price & Promo" text descriptions. Built with Python (Flask) and Pandas.
+A web-based tool designed to automatically calculate promotion depths from "Price & Promo" text descriptions. Built with HTML, CSS, and JavaScript, this tool runs entirely in your browser.
 
 ![ShelfTrak Logo](static/images/logo.png)
 
 ## Features
 
+-   **Client-Side Processing**: All calculations happen directly in your browser. No data is uploaded to any server, ensuring privacy and speed.
 -   **Advanced Calculation Logic (v15)**: Parses complex promo strings including:
     -   "Save X%" / "X% Off"
     -   "Buy X Get Y Free"
@@ -21,37 +22,22 @@ A web-based tool designed to automatically calculate promotion depths from "Pric
 
 ## Prerequisites
 
--   Python 3.8 or higher
--   pip (Python package installer)
-
-## Installation
-
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/ShaonINT/ShelfTrak_PromoDepth_Calculator.git
-    cd ShelfTrak_PromoDepth_Calculator
-    ```
-
-2.  **Create a virtual environment** (optional but recommended):
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
-
-3.  **Install dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
+-   A modern web browser (Chrome, Firefox, Safari, Edge).
 
 ## Usage
 
-1.  **Run the application**:
-    ```bash
-    python app.py
-    ```
+### Running Locally
 
-2.  **Open your browser**:
-    Navigate to `http://127.0.0.1:5000`
+1.  **Clone or Download**:
+    -   Clone the repository:
+        ```bash
+        git clone https://github.com/ShaonINT/ShelfTrak_PromoDepth_Calculator.git
+        ```
+    -   Or download the ZIP file and extract it.
+
+2.  **Open the App**:
+    -   Simply double-click `index.html` to open it in your default browser.
+    -   Alternatively, you can serve it with a simple static server (e.g., `python -m http.server` or `npx serve`) if you prefer, but it is not required.
 
 3.  **Prepare your data**:
     -   Ensure your Excel file (`.xlsx` or `.xls`) has a column named **"Price & Promo"** or **"Price & Promo Details"**.
@@ -62,14 +48,13 @@ A web-based tool designed to automatically calculate promotion depths from "Pric
     -   Click "Calculate & Download".
     -   Review the preview table and download the full result.
 
-## Deployment Note
+## Deployment
 
-This application is built using **Flask (Python)**, which requires a backend server to run the calculation logic.
+This application is a **static website** (HTML/CSS/JS). It can be hosted on any static site hosting service, including:
 
-**GitHub Pages** is designed for *static* websites (HTML/CSS/JS only) and **cannot** host this application directly.
+-   **GitHub Pages** (Recommended)
+-   Netlify
+-   Vercel
+-   Cloudflare Pages
 
-To deploy this app online, you should use a platform that supports Python web apps, such as:
--   **Render** (has a free tier)
--   **Railway**
--   **Heroku**
--   **PythonAnywhere**
+No backend server (Python/Flask) is required.
