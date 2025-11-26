@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShelfTrak Promo Depth Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/style.css">
+    <link rel="stylesheet" href="static/table_styles.css">
+    <!-- SheetJS for Excel processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <img src="static/images/logo.png" alt="ShelfTrak Logo" class="logo">
+            <h1>Promo Depth Calculator</h1>
+            <p>Upload your Price & Promo file to calculate depths automatically.</p>
+        </header>
+
+        <div class="instructions">
+            <h3>How to Prepare Your Data</h3>
+            <ol>
+                <li>Download the Latest Wave Data.</li>
+                <li>Combine the <strong>Local Price</strong> and <strong>PromotionDetails</strong> using Concatenation
+                    Function Seperated by ( - ).</li>
+                <li>Rename the new Column as <strong>Price & Promo Details</strong>.</li>
+                <li>Take the Price & Promo Details column to a separate sheet, go to Data tab and remove duplicates.
+                </li>
+                <li>Save the Price & Promo Details in a separate Excel file.</li>
+                <li>Upload the Excel file below.</li>
+            </ol>
+        </div>
+
+        <div class="instructions">
+            <h3>Calculation Logic Examples</h3>
+            <ul>
+                <li><strong>Direct %:</strong> "Save 33%" → 33%</li>
+                <li><strong>Buy X Get Y:</strong> "Buy 2 Get 1 Free" → 33.33% (1/3)</li>
+                <li><strong>Was/Now:</strong> "Was $100 Now $80" → 20%</li>
+                <li><strong>Money Off:</strong> "$10 Off" (Base $50) → 20%</li>
+                <li><strong>Multi-Buy:</strong> "2 For $15" (Base $10 each) → 25%</li>
+            </ul>
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="static/Promo_Depth_Rules.pdf" class="btn-secondary" download>Download Full Rules PDF</a>
+            </div>
+        </div>
+
+        <main>
+            <!-- Flash messages removed (handled by JS alerts if needed) -->
+            <div id="error-message" class="alert"
+                style="display: none; background-color: #fee2e2; color: #991b1b; border-color: #fca5a5;"></div>
+
+            <form id="upload-form" class="upload-form" onsubmit="handleFormSubmit(event)">
+                <p style="text-align: center; margin-bottom: 0.5rem; color: var(--text-light); font-size: 0.9rem;">
+                    Acceptable file formats: <strong>.xlsx, .xls</strong>
+                </p>
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <img src="static/images/column_example.png" alt="Column Example"
+                        style="max-width: 100%; border: 1px solid #e2e8f0; border-radius: 8px;">
+                </div>
+                <div class="drop-zone" id="drop-zone">
+                    <span class="drop-zone__prompt">Drag & Drop file here or <span
+                            class="highlight">Browse</span></span>
+                    <input type="file" name="file" id="file-input" class="drop-zone__input" accept=".xlsx, .xls"
+                        required>
+                    <div class="drop-zone__thumb" style="display: none;"></div>
+                </div>
+                <button type="submit" class="btn-primary" id="calculate-btn">Calculate & Download</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 1rem; color: #ef4444; font-size: 0.85rem; font-weight: 500;">
+                Note: This app can make mistakes in calculating Promo Depth, please perform QA before using it.
+            </p>
+
+            <!-- Results Section (Hidden by default) -->
+            <div id="results-section" class="results-section" style="display: none;">
+                <div class="alert" style="background-color: #dcfce7; color: #166534; border-color: #bbf7d0;">
+                    <strong>Success!</strong> Calculated promo depth for <strong id="row-count">0</strong> rows.
+                </div>
+
+                <div class="preview-container">
+                    <h3>Preview (First 50 Rows)</h3>
+                    <div class="table-responsive">
+                        <table id="preview-table">
+                            <thead>
+                                <tr>
+                                    <th>Price & Promo</th>
+                                    <th>Promo Depth (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows will be inserted here by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button id="download-btn" class="btn-primary">Download Full Excel File</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="static/script.js"></script>
+</body>
+
+</html>

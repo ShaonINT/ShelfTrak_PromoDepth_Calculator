@@ -1,6 +1,0 @@
-flask
-pandas
-openpyxl
-xlsxwriter
-reportlab
-gunicorn
