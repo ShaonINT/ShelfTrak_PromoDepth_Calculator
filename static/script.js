@@ -585,8 +585,25 @@ function calculatePromoDepth(pricePromo) {
             if (a > 1 && b > 0 && a !== b && Math.max(a, b) <= 10) {
                 const total = Math.max(a, b);
                 const paid = Math.min(a, b);
-                addPct((1 - paid / total) * 100.0);
+                const disc = (1 - paid / total) * 100.0;
+                // Guard: >75% is too high for qty-for-qty — likely data issue
+                if (disc < 75.0) addPct(disc);
             }
+        }
+    }
+
+    // =========================================================
+    // NEW: "£X each or N for £Y" — unit price vs bundle price
+    // e.g. "£3 each or 2 for £5" → disc = 1 - 5/(2*3) = 16.67%
+    // =========================================================
+    const mEachOrBundle = promo.match(/£\s*([\d.]+)\s*each.*?(\d+)\s*for\s*£\s*([\d.]+)/i);
+    if (mEachOrBundle) {
+        const unitPrice  = parseFloat(mEachOrBundle[1]);
+        const bundleQty  = parseInt(mEachOrBundle[2]);
+        const bundleTotal = parseFloat(mEachOrBundle[3]);
+        if (unitPrice > 0 && bundleQty > 0 && bundleTotal < bundleQty * unitPrice) {
+            const disc = (1 - bundleTotal / (bundleQty * unitPrice)) * 100.0;
+            if (disc > 0 && disc < 75.0) addPct(disc);
         }
     }
 
