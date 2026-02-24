@@ -869,6 +869,33 @@ function calculatePromoDepth(pricePromo) {
         }
     }
 
+    // =========================================================
+    // NEW: Multi-tier pricing with no base price
+    // e.g. "0 - 2 for $65, 3 for $95" → worst unit=$32.50, best=$31.67 → 2.56%
+    // "0 - 2 for $150 or $75 each"   → both tiers = $75/unit → 0%
+    // Rule: disc = 1 - best_unit / worst_unit (lowest discount principle)
+    // Only fires when basePrice is null and ≥2 distinct tier unit prices found
+    // =========================================================
+    if (basePrice === null) {
+        const tierPairs = [];
+        for (const m of promo.matchAll(/(\d+)\s*for\s*\$?\s*([\d.]+)/gi)) {
+            const qty = parseInt(m[1]), price = parseFloat(m[2]);
+            if (qty > 0 && price > 0) tierPairs.push(price / qty);
+        }
+        // Also catch "$X each" as qty=1 tier
+        for (const m of promo.matchAll(/\$\s*([\d.]+)\s*each/gi)) {
+            tierPairs.push(parseFloat(m[1]));
+        }
+        if (tierPairs.length >= 2) {
+            const worstUnit = Math.max(...tierPairs);
+            const bestUnit  = Math.min(...tierPairs);
+            if (worstUnit > bestUnit) {
+                const disc = (1 - bestUnit / worstUnit) * 100.0;
+                if (disc > 0 && disc < 75.0) addPct(disc);
+            }
+        }
+    }
+
     // ========= FINAL DECISION =========
     if (discounts.length === 0) return 0.0;
 
