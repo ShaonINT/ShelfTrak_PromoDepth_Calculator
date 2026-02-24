@@ -446,6 +446,9 @@ function calculatePromoDepth(pricePromo) {
 
         const saving = parseFloat(numText);
 
+        // Guard: saving > base is a currency/denomination mismatch → 0
+        if (basePrice !== null && saving > basePrice) continue;
+
         // If "Now Y"
         const nowMatch = promo.match(/[Nn]ow[^\d]*([0-9]+(?:\.[0-9]+)?)/);
         if (nowMatch) {
@@ -528,7 +531,7 @@ function calculatePromoDepth(pricePromo) {
     // Note: "BUY N PAY X price" (Rule 12) handles price-based version.
     // This handles the unit-count version without currency/price.
     // =========================================================
-    const mBuyNPayM = [...promo.matchAll(/Buy\s*(\d+)\s*[Pp]ay\s*(\d+)\b/gi)];
+    const mBuyNPayM = [...promo.matchAll(/Buy\s*(\d+)\s*[Pp]ay\s*(?:for\s*)?(\d+)\b/gi)];
     for (const m of mBuyNPayM) {
         const total = parseInt(m[1]);
         const paid = parseInt(m[2]);
@@ -579,7 +582,7 @@ function calculatePromoDepth(pricePromo) {
         for (const m of mAforB) {
             const a = parseInt(m[1]);
             const b = parseInt(m[2]);
-            if (a > 0 && b > 0 && a !== b && Math.max(a, b) <= 10) {
+            if (a > 1 && b > 0 && a !== b && Math.max(a, b) <= 10) {
                 const total = Math.max(a, b);
                 const paid = Math.min(a, b);
                 addPct((1 - paid / total) * 100.0);
@@ -632,7 +635,7 @@ function calculatePromoDepth(pricePromo) {
             if (effUnit < basePrice) {
                 const disc = (1 - effUnit / basePrice) * 100.0;
                 // Guard: >75% bundle discount is almost always a data error
-                if (disc <= 75.0) addPct(disc);
+                if (disc < 75.0) addPct(disc);
             }
         }
     }
@@ -647,7 +650,7 @@ function calculatePromoDepth(pricePromo) {
             if (effUnit < basePrice) {
                 const disc = (1 - effUnit / basePrice) * 100.0;
                 // Guard: >75% bundle discount is almost always a data error
-                if (disc <= 75.0) addPct(disc);
+                if (disc < 75.0) addPct(disc);
             }
         }
     }
@@ -669,7 +672,9 @@ function calculatePromoDepth(pricePromo) {
     const mEach = promo.match(/([0-9]+(?:\.[0-9]+)?)\s*each/i);
     if (mEach && basePrice !== null) {
         const effUnit = parseFloat(mEach[1]);
-        if (effUnit < basePrice) {
+        // Guard: if £ present and base > 10, likely currency mismatch (e.g. TWD base vs £ price)
+        const hasGBP = /£/.test(promo);
+        if (!(hasGBP && basePrice > 10) && effUnit < basePrice) {
             addPct((1 - effUnit / basePrice) * 100.0);
         }
     }
@@ -710,7 +715,7 @@ function calculatePromoDepth(pricePromo) {
             if (promoPrice < basePrice) {
                 const disc = (1 - promoPrice / basePrice) * 100.0;
                 // Guard: >75% single-unit discount is almost always a data error
-                if (disc <= 75.0) addPct(disc);
+                if (disc < 75.0) addPct(disc);
             }
         }
     }
@@ -780,7 +785,7 @@ function calculatePromoDepth(pricePromo) {
         const unit1 = parseFloat(mAnyNBuy1[3]);
         if (nQty > 0 && nTotal > 0 && unit1 > 0) {
             const disc = (1 - nTotal / (nQty * unit1)) * 100.0;
-            if (disc > 0 && disc <= 75.0) addPct(disc);
+            if (disc > 0 && disc < 75.0) addPct(disc);
         }
     }
 
@@ -794,7 +799,7 @@ function calculatePromoDepth(pricePromo) {
         const unitPrice = parseFloat(mNxPrice[2]);
         if (unitPrice < basePrice) {
             const disc = (1 - unitPrice / basePrice) * 100.0;
-            if (disc > 0 && disc <= 75.0) addPct(disc);
+            if (disc > 0 && disc < 75.0) addPct(disc);
         }
     }
 
@@ -812,7 +817,7 @@ function calculatePromoDepth(pricePromo) {
         // is handled by Rule 5 (X off) which correctly uses base+saving as denominator
         if (buyN >= 2 && getVal > 10 && basePrice !== null) {
             const disc = (1 - getVal / (buyN * basePrice)) * 100.0;
-            if (disc > 0 && disc <= 75.0) addPct(disc);
+            if (disc > 0 && disc < 75.0) addPct(disc);
         }
     }
 
@@ -825,7 +830,7 @@ function calculatePromoDepth(pricePromo) {
         const unitPrice = parseFloat(mCurrEach[1]);
         if (unitPrice < basePrice) {
             const disc = (1 - unitPrice / basePrice) * 100.0;
-            if (disc > 0 && disc <= 75.0) addPct(disc);
+            if (disc > 0 && disc < 75.0) addPct(disc);
         }
     }
 
@@ -843,7 +848,7 @@ function calculatePromoDepth(pricePromo) {
         if (qty > 0 && discAmt > 0) {
             const newPerUnit = (basePrice * qty - discAmt) / qty;
             const disc = (1 - newPerUnit / basePrice) * 100.0;
-            if (disc > 0 && disc <= 75.0) addPct(disc);
+            if (disc > 0 && disc < 75.0) addPct(disc);
         }
     }
 
