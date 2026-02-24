@@ -261,6 +261,9 @@ function calculatePromoDepth(pricePromo) {
         }
     }
 
+    // Spend over X for free gift → GWP, not a discount
+    if (/spend\s+over/i.test(promo)) return 0.0;
+
     // Gift-with-purchase -> 0%
     if (/receive a free bottle/i.test(promo)) return 0.0;
 
@@ -308,8 +311,9 @@ function calculatePromoDepth(pricePromo) {
 
     // =========================================================
     // "Buy 2 get 10" — ambiguous (10 units vs £10 off) → 0
+    // But NOT when followed by % (that's "Buy 2 Get 10% Off" which is valid)
     // =========================================================
-    if (/buy\s*2\s+get\s+10\b/i.test(promo)) return 0.0;
+    if (/buy\s*2\s+get\s+10\b/i.test(promo) && !/buy\s*2\s+get\s+10\s*%/i.test(promo)) return 0.0;
 
     // =========================================================
     // Currency mismatch: £ bundle vs high non-GBP base (>200) → 0
@@ -446,8 +450,9 @@ function calculatePromoDepth(pricePromo) {
 
         const saving = parseFloat(numText);
 
-        // Guard: saving > base is a currency/denomination mismatch → 0
-        if (basePrice !== null && saving > basePrice) continue;
+        // Guard: saving > 2x base is clearly a currency/denomination mismatch → 0
+        // Only applies when we have a meaningful base price (> 0)
+        if (basePrice !== null && basePrice > 0 && saving > basePrice * 2) continue;
 
         // If "Now Y"
         const nowMatch = promo.match(/[Nn]ow[^\d]*([0-9]+(?:\.[0-9]+)?)/);
@@ -870,27 +875,59 @@ function calculatePromoDepth(pricePromo) {
     }
 
     // =========================================================
-    // NEW: Multi-tier pricing with no base price
-    // e.g. "0 - 2 for $65, 3 for $95" → worst unit=$32.50, best=$31.67 → 2.56%
-    // "0 - 2 for $150 or $75 each"   → both tiers = $75/unit → 0%
+    // Multi-tier pricing — no base OR tiers in different currency than base
+    // Handles: $-priced, £-priced, and bare-number tiers
     // Rule: disc = 1 - best_unit / worst_unit (lowest discount principle)
-    // Only fires when basePrice is null and ≥2 distinct tier unit prices found
+    // Fires when: basePrice is null, OR all tier unit prices exceed base (currency mismatch)
     // =========================================================
-    if (basePrice === null) {
-        const tierPairs = [];
-        for (const m of promo.matchAll(/(\d+)\s*for\s*\$?\s*([\d.]+)/gi)) {
+    const _buildTierList = () => {
+        const tp = [];
+        for (const m of promo.matchAll(/[$£¥€]\s*([\d.]+)\s*each/gi))
+            tp.push({ unit: parseFloat(m[1]), hasCurrency: true });
+        for (const m of promo.matchAll(/(?:any\s*)?(\d+)\s+for\s+([$£¥€]?)\s*([\d.]+)/gi)) {
+            const qty = parseInt(m[1]), price = parseFloat(m[3]), hasCurr = m[2].length > 0;
+            if (qty > 0 && price > qty) tp.push({ unit: price / qty, hasCurrency: hasCurr });
+        }
+        for (const m of promo.matchAll(/(?:any|buy\s*any|buy)\s+(\d+)\s+([\d.]+)/gi)) {
             const qty = parseInt(m[1]), price = parseFloat(m[2]);
-            if (qty > 0 && price > 0) tierPairs.push(price / qty);
+            if (qty > 0 && price > qty) tp.push({ unit: price / qty, hasCurrency: false });
         }
-        // Also catch "$X each" as qty=1 tier
-        for (const m of promo.matchAll(/\$\s*([\d.]+)\s*each/gi)) {
-            tierPairs.push(parseFloat(m[1]));
-        }
-        if (tierPairs.length >= 2) {
-            const worstUnit = Math.max(...tierPairs);
-            const bestUnit  = Math.min(...tierPairs);
+        return tp;
+    };
+
+    const _tierObjs = _buildTierList();
+    const _tierUnits = _tierObjs.map(t => t.unit);
+    const _hasBareTiers = _tierObjs.some(t => !t.hasCurrency);
+    if (_tierUnits.length >= 2) {
+        const worstUnit = Math.max(..._tierUnits); // highest unit price = least discount
+        const bestUnit  = Math.min(..._tierUnits); // lowest unit price  = most discount
+        const _tiersAboveBase = basePrice === null || (basePrice > 0 && _tierUnits.every(u => u > basePrice));
+        const _tiersBelowBase = basePrice !== null && basePrice > 0 && _tierUnits.every(u => u < basePrice);
+
+        if (_tiersBelowBase) {
+            // Tiers below base → worst tier vs base (lowest discount principle)
+            const disc = (1 - worstUnit / basePrice) * 100.0;
+            if (disc > 0 && disc < 75.0) addPct(disc);
+        } else if (_tiersAboveBase || _hasBareTiers) {
+            // No base, or tiers above base (currency mismatch), or bare tiers → tier vs tier
             if (worstUnit > bestUnit) {
                 const disc = (1 - bestUnit / worstUnit) * 100.0;
+                if (disc > 0 && disc < 75.0) addPct(disc);
+            }
+        }
+    }
+
+    // "N for [bundle_price], Save S" with no base — use bundle+saving as original
+    if (basePrice === null) {
+        const mBundleSave = promo.match(/(\d+)\s+for\s+[$£¥€]?\s*([\d.]+)[^%]*save[^\d]*([\d.]+)/i);
+        if (mBundleSave) {
+            const bundleTotal = parseFloat(mBundleSave[2]);
+            const saving = parseFloat(mBundleSave[3]);
+            // Skip if the saving value is followed by % (it's a % promo, not monetary saving)
+            const afterSaving = promo.substring(promo.lastIndexOf(mBundleSave[3]) + mBundleSave[3].length).trim();
+            if (afterSaving[0] !== '%' && bundleTotal > 0 && saving > 0 && saving < bundleTotal) {
+                const orig = bundleTotal + saving;
+                const disc = (saving / orig) * 100.0;
                 if (disc > 0 && disc < 75.0) addPct(disc);
             }
         }
