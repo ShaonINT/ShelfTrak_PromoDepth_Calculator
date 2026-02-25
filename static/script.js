@@ -264,6 +264,13 @@ function calculatePromoDepth(pricePromo) {
     // Spend over X for free gift → GWP, not a discount
     if (/spend\s+over/i.test(promo)) return 0.0;
 
+    // "Gift" without any discount signal → GWP/gift-with-purchase → 0%
+    // Allows: "20% Off & Free Gift", "Buy 2 Save 15% Gift Bag", "Gift Set 20% Off"
+    if (/gift/i.test(promo)) {
+        const hasDiscountSignal = /%|off|save|discount/i.test(promo);
+        if (!hasDiscountSignal) return 0.0;
+    }
+
     // Gift-with-purchase -> 0%
     if (/receive a free bottle/i.test(promo)) return 0.0;
 
