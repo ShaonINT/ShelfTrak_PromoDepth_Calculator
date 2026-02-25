@@ -266,9 +266,13 @@ function calculatePromoDepth(pricePromo) {
 
     // "Gift" without any discount signal → GWP/gift-with-purchase → 0%
     // Allows: "20% Off & Free Gift", "Buy 2 Save 15% Gift Bag", "Gift Set 20% Off"
+    // Allows: "Buy N Get 1 Free Gift" / "Any N Get 1 Free Gift" — these are BOGO (free bottle), not GWP
     if (/gift/i.test(promo)) {
         const hasDiscountSignal = /%|off|save|discount/i.test(promo);
-        if (!hasDiscountSignal) return 0.0;
+        const isBogoGift = /(?:buy|any)\s*\d+\s*(?:get|&\s*get)\s*\d+\s*free/i.test(promo) ||
+                           /\d+\s*get\s*\d+\s*free/i.test(promo) ||
+                           /get\s*\d+\s*free/i.test(promo);
+        if (!hasDiscountSignal && !isBogoGift) return 0.0;
     }
 
     // Gift-with-purchase -> 0%
